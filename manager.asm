@@ -52,7 +52,8 @@
 %include "gpr_backup.inc"      ;<==This file contains macros that back up and restore the general purpose registers.
 newline equ 10
 null equ 0
-;number_of_cells equ 5          ;<==To next open source developer: you may wish to change the size of the array
+arraysize equ 15
+
 
 extern printf
 extern isfloat
@@ -62,66 +63,20 @@ extern input_array
 extern showlumber
 extern stdin
 
-global is_float
+global manager
 
 segment .data
 tryagainmessage db "The last input was invalid and not entered into the array.",newline,null
 
 
 segment .bss
-buffer resb 512                     ; holds the string input of a floating point number
-
+arrayA resq arraysize                      ;<==Holds up to 15 double precision floating point numbers (cell size: 8 bytes)
+arrayB resq arraysize                      ;<==Holds up to 15 double precision floating point numbers
 
 segment .text
-is_float:
 backup    ;<==This macro backs up all general purpose registers.
-begin:
-;--------------- Stores string input ------------------------------------------------------
-xor rax, rax                        ; Clear rax
-mov rdi, buffer                     ; Address of string
-mov rsi, 511                        ; Maximum number of characters to read
-mov rdx, [stdin]                    ; File handle 0 is stdin
-call fget                           ; Call fget to read a string from stdin stored at address in rdi
-;---------------------------------------------------------------------------------------------------
 
-;--------------- Check for ctrl-d ----------------------------------------------------------
-cmp rax, 0                          ; Did fget return 0 (ctrl-d)?
-je exit                             ; Jump if ctrl-d was entered
-;--------------- Validate string as float ----------------------------------------------------------
-mov rax, 0                          ; Clear rax
-mov rdi, buffer                     ; Address of string
-call isfloat                        ; Call isfloat to validate the string as a float
-; rax holds 0 if test fails, non-zero if test passes
-cmp rax, 0                          ; Did the test fail?
-je failed                           ; Jump if test failed
-;---------------------------------------------------------------------------------------------------
 
-;--------------- handle valid input ----------------------------------------------------------
-mov rax, 0
-mov rdi, buffer
-call atof                            ; Places converted float into rax
-push rax                             ; Push the float onto the stack
-movsd xmm15, [esp]                   ; Move the float from the stack into xmm15
-pop rax                              ; Pop the stack
-jmp continue                         ; Jump to continue
-;---------------------------------------------------------------------------------------------------
 
-;--------------- If test Failed ----------------------------------------------------------------
-failed:
-    mov rax, 0
-    mov rdi, tryagainmessage
-    call printf
-    jmp begin
-;---------------------------------------------------------------------------------------------------
-
-continue:                           ; Continue here if input was valid
-    movsd xmm0, xmm15               ; move double result into xmm0
-    mov rax, 1                      ; success status
-    jmp done                        ; Skip exit block
-
-exit:                               ;exit if ctrl-d was entered
-    xor rax, rax                    ; rax = 0 indicates ctrl-d / EOF
-
-done:
-    restore                         ;<==This macro restores all general purpose registers.
-    ret
+restore   ;<==This macro restores all general purpose registers.
+ret
