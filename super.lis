@@ -1,0 +1,274 @@
+     1                                  ;******************************************************************************************************************
+     2                                  ;Program name: "Array Management".  This program demonstrates how to pass an array to a called subprogram.        *
+     3                                  ;Copyright (C) 2020 Floyd Holliday                                                                                *
+     4                                  ;                                                                                                                 *
+     5                                  ;This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public*
+     6                                  ;License version 3 as published by the Free Software Foundation.  This program is distributed in the hope that it *
+     7                                  ;will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A  *
+     8                                  ;PARTICULAR PURPOSE.  See the GNU General Public License for more details.  A copy of the GNU General Public      *
+     9                                  ;License v3 is available here:  <https://www.gnu.org/licenses/>.                                                  *
+    10                                  ;******************************************************************************************************************
+    11                                  
+    12                                  ;The blank line separates the notice of copyright (rights reserved to the author) from the notice of license 
+    13                                  ;(rights reserved to the people).  The actual license itself never appears in source code but is type found in an
+    14                                  ;accompanying text file.
+    15                                  
+    16                                  ;========1=========2=========3=========4=========5=========6=========7=========8=========9=========0=========1=========2
+    17                                  ;
+    18                                  ;Author information
+    19                                  ;  Author name: Floyd Holliday
+    20                                  ;  Author email: holliday@fullerton.edu
+    21                                  ;
+    22                                  ;Program information
+    23                                  ;  Program name: Array Management
+    24                                  ;  Programming languages: Two modules in C, two modules in X86
+    25                                  ;  Date program began:     2022-Mar-04
+    26                                  ;  Date program completed: 2022-Mar-06
+    27                                  ;  Date comments upgraded: 2022-Mar-06
+    28                                  ;  Files in this program: director.c, supervisor.asm, output_array.asm, input_array.c, director.c 
+    29                                  ;  Status: Complete.  Alpha testing is finished.  Extreme cases were tested and errors resolved.
+    30                                  ;
+    31                                  ;References for this program
+    32                                  ;  Jorgensen, X86-64 Assembly Language Programming with Ubuntu
+    33                                  ;
+    34                                  ;Purpose (academic)
+    35                                  ;  Show how to pass an array from a caller function to a called function.
+    36                                  ;
+    37                                  ;This file
+    38                                  ;   File name: supervisor.asm
+    39                                  ;   Language: i-series microprocessor assembly
+    40                                  ;   Syntax: Intel
+    41                                  ;   Max page width: 116 columns
+    42                                  ;   Assemble: nasm -f elf64 -o super.o supervisor.asm -l super.lis
+    43                                  ;   Link: gcc -m64 -no-pie -o arr.out -std=c17 director.o super.o input.o output.o 
+    44                                  ;   Reference regarding -no-pie: Jorgensen, page 226.
+    45                                  ;   Prototype of this function:  double manage_arrays();
+    46                                  ;
+    47                                  ;=======1=========2=========3=========4=========5=========6=========7=========8=========9=========0=========1=========2
+    48                                  ;
+    49                                  ;
+    50                                  ;
+    51                                  ;
+    52                                  ;===== Begin code area ================================================================================================
+    53                                  
+    54                                  
+    55                                  
+    56                                  ;Declarations
+    57                                  %include "gpr_backup.inc"      ;<==This file contains macros that back up and restore the general purpose registers.
+     1                              <1> ;******************************************************************************************************************
+     2                              <1> ;Copyright (C) 2020 Floyd Holliday                                                                                *
+     3                              <1> ;                                                                                                                 *
+     4                              <1> ;This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public*
+     5                              <1> ;License version 3 as published by the Free Software Foundation.  This program is distributed in the hope that it *
+     6                              <1> ;will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A  *
+     7                              <1> ;PARTICULAR PURPOSE.  See the GNU General Public License for more details.  A copy of the GNU General Public      *
+     8                              <1> ;License v3 is available here:  <https://www.gnu.org/licenses/>.                                                  *
+     9                              <1> ;******************************************************************************************************************
+    10                              <1> 
+    11                              <1> 
+    12                              <1> ;========1=========2=========3=========4=========5=========6=========7=========8=========9=========0=========1=========2
+    13                              <1> ;
+    14                              <1> ;Author information
+    15                              <1> ;  Author name: Cameron Abo
+    16                              <1> ;  Author email: cabo0@csu.fullerton.edu
+    17                              <1> ;
+    18                              <1> ;Program information
+    19                              <1> ;  Program name: gpr_backup.inc
+    20                              <1> ;  Programming environment: Visual Studio Code, gcc 9.4.0, nasm
+    21                              <1> ;  Programming languages:  X86
+    22                              <1> ;  Date program began:     2025-Sep-21
+    23                              <1> ;  Date program completed: 2025-Sep-21
+    24                              <1> ;  Date comments upgraded: 2025-Sep-21
+    25                              <1> ;  Files in this program: director.c, supervisor.asm, output_array.asm, input_array.c, director.c 
+    26                              <1> ;  Status: Complete.  Alpha testing is finished.  Extreme cases were tested and errors resolved.
+    27                              <1> ;
+    28                              <1> ;References for this program
+    29                              <1> ;  X86-64 Assembly Language Programming with Ubuntu
+    30                              <1> ;
+    31                              <1> ;Purpose (academic)
+    32                              <1> ;  Backup and restore all general purpose registers and rflags.
+    33                              <1> ;
+    34                              <1> ;This file
+    35                              <1> ;   File name: gpr_backup.inc
+    36                              <1> ;   Language: i-series microprocessor assembly
+    37                              <1> ;   Syntax: Intel
+    38                              <1> ;   Max page width: 116 columns
+    39                              <1> ;   Assemble: nasm -f elf64 -o super.o supervisor.asm -l super.lis
+    40                              <1> ;   Link: gcc -m64 -no-pie -o arr.out -std=c17 director.o super.o input.o output.o 
+    41                              <1> ;   Reference regarding -no-pie: Jorgensen, page 226.
+    42                              <1> ;   Prototype of this function:  double manage_arrays();
+    43                              <1> ;
+    44                              <1> ;=======1=========2=========3=========4=========5=========6=========7=========8=========9=========0=========1=========2
+    45                              <1> ;
+    46                              <1> ;
+    47                              <1> ;
+    48                              <1> ;
+    49                              <1> ;===== Begin code area ================================================================================================
+    50                              <1> 
+    51                              <1> 
+    52                              <1> %macro backup 0
+    53                              <1>     push rbp                                          ;Backup rbp
+    54                              <1>     mov  rbp,rsp                                      ;The base pointer now points to top of stack
+    55                              <1>     push rdi                                          ;Backup rdi
+    56                              <1>     push rsi                                          ;Backup rsi
+    57                              <1>     push rdx                                          ;Backup rdx
+    58                              <1>     push rcx                                          ;Backup rcx
+    59                              <1>     push r8                                           ;Backup r8
+    60                              <1>     push r9                                           ;Backup r9
+    61                              <1>     push r10                                          ;Backup r10
+    62                              <1>     push r11                                          ;Backup r11
+    63                              <1>     push r12                                          ;Backup r12
+    64                              <1>     push r13                                          ;Backup r13
+    65                              <1>     push r14                                          ;Backup r14
+    66                              <1>     push r15                                          ;Backup r15
+    67                              <1>     push rbx                                          ;Backup rbx
+    68                              <1>     pushf                                             ;Backup rflags
+    69                              <1> %endmacro
+    70                              <1> %macro restore 0
+    71                              <1>     popf                                    ;Restore rflags
+    72                              <1>     pop rbx                                 ;Restore rbx
+    73                              <1>     pop r15                                 ;Restore r15
+    74                              <1>     pop r14                                 ;Restore r14
+    75                              <1>     pop r13                                 ;Restore r13
+    76                              <1>     pop r12                                 ;Restore r12
+    77                              <1>     pop r11                                 ;Restore r11
+    78                              <1>     pop r10                                 ;Restore r10
+    79                              <1>     pop r9                                  ;Restore r9
+    80                              <1>     pop r8                                  ;Restore r8
+    81                              <1>     pop rcx                                 ;Restore rcx
+    82                              <1>     pop rdx                                 ;Restore rdx
+    83                              <1>     pop rsi                                 ;Restore rsi
+    84                              <1>     pop rdi                                 ;Restore rdi
+    85                              <1>     pop rbp                                 ;Restore rbp
+    86                              <1> %endmacro
+    87                              <1> ;End of File
+    58                                  newline equ 10
+    59                                  null equ 0
+    60                                  number_of_cells equ 5          ;<==To next open source developer: you may wish to change the size of the array
+    61                                  
+    62                                  extern printf
+    63                                  extern input_array
+    64                                  extern showlumber
+    65                                  
+    66                                  global manage_arrays
+    67                                  
+    68                                  
+    69                                  segment .data
+    70 00000000 57656C636F6D652074-     welcome db "Welcome to Manage Arrays",newline,null
+    70 00000009 6F204D616E61676520-
+    70 00000012 4172726179730A00   
+    71 0000001A 5468652070726F6772-     info db "The program will show how an array declared in manage_arrays can be passed to two different called functions",newline,null
+    71 00000023 616D2077696C6C2073-
+    71 0000002C 686F7720686F772061-
+    71 00000035 6E2061727261792064-
+    71 0000003E 65636C617265642069-
+    71 00000047 6E206D616E6167655F-
+    71 00000050 617272617973206361-
+    71 00000059 6E2062652070617373-
+    71 00000062 656420746F2074776F-
+    71 0000006B 20646966666572656E-
+    71 00000074 742063616C6C656420-
+    71 0000007D 66756E6374696F6E73-
+    71 00000086 0A00               
+    72 00000088 546865206164647265-     array_address db "The address of the array plywood is %016lx",newline,null
+    72 00000091 7373206F6620746865-
+    72 0000009A 20617272617920706C-
+    72 000000A3 79776F6F6420697320-
+    72 000000AC 253031366C780A00   
+    73                                  
+    74                                  
+    75                                  segment .bss
+    76                                  align 16
+    77 00000000 <res 28h>               plywood resq number_of_cells
+    78                                  
+    79                                  
+    80                                  segment .text
+    81                                  manage_arrays:
+    82                                  
+    83                                  ;Back up the general purpose registers for the sole purpose of protecting the data of the caller.
+    84                                  ;push rbp                                          ;Backup rbp
+    85                                  ;mov  rbp,rsp                                      ;The base pointer now points to top of stack
+    86                                  ;push rdi                                          ;Backup rdi
+    87                                  ;push rsi                                          ;Backup rsi
+    88                                  ;push rdx                                          ;Backup rdx
+    89                                  ;push rcx                                          ;Backup rcx
+    90                                  ;push r8                                           ;Backup r8
+    91                                  ;push r9                                           ;Backup r9
+    92                                  ;push r10                                          ;Backup r10
+    93                                  ;push r11                                          ;Backup r11
+    94                                  ;push r12                                          ;Backup r12
+    95                                  ;push r13                                          ;Backup r13
+    96                                  ;push r14                                          ;Backup r14
+    97                                  ;push r15                                          ;Backup r15
+    98                                  ;push rbx                                          ;Backup rbx
+    99                                  ;pushf                                             ;Backup rflags
+   100                                  
+   101                                  gpr_backup    ;<==This macro backs up all general purpose registers.
+   101          ******************       warning: label alone on a line without a colon might be in error [-w+label-orphan]
+   102                                  
+   103                                  ;Registers rax, rip, and rsp are usually not backed up.
+   104                                  
+   105                                  ;Block that displays the welcome message
+   106 00000000 B800000000              mov rax, 0
+   107 00000005 48BF-                   mov rdi,welcome
+   107 00000007 [0000000000000000] 
+   108 0000000F E8(00000000)            call printf
+   109                                  
+   110                                  ;Block that displays the informational details
+   111 00000014 B800000000              mov rax, 0
+   112 00000019 48BF-                   mov rdi,info
+   112 0000001B [1A00000000000000] 
+   113 00000023 E8(00000000)            call printf
+   114                                  
+   115                                  ;A block that will call function "input_array" and pass an array to that function.
+   116 00000028 B800000000              mov rax,0
+   117 0000002D 48BF-                   mov rdi,plywood
+   117 0000002F [0000000000000000] 
+   118 00000037 BE05000000              mov rsi,number_of_cells
+   119 0000003C E8(00000000)            call input_array
+   120 00000041 4989C5                  mov r13,rax     ;r13 holds the number of values stored in the array plywood.
+   121                                  
+   122                                  ;Teaching moment.  Notice that I do not create a pointer to a cell in order to store this integer.
+   123                                  ;My scalar variables are registers, both general registers and xmm registers.  This is the culture
+   124                                  ;of assembly programming.  Save data in registers until such time that all registers are in use.
+   125                                  ;At that time you must push some data in order to re-use the registers occupied by those data.
+   126                                  
+   127                                  ;Set up the necessary parameter to show the address of the array.
+   128 00000044 B800000000              mov rax, 0
+   129 00000049 48BF-                   mov rdi, array_address
+   129 0000004B [8800000000000000] 
+   130 00000053 48BE-                   mov rsi, plywood
+   130 00000055 [0000000000000000] 
+   131 0000005D E8(00000000)            call printf
+   132                                  
+   133                                  ;A block of statements that will setup a call to the function that displays all values in an array.
+   134 00000062 B800000000              mov rax,0
+   135 00000067 48BF-                   mov rdi,plywood
+   135 00000069 [0000000000000000] 
+   136 00000071 4C89EE                  mov rsi,r13
+   137 00000074 E8(00000000)            call showlumber
+   138                                  
+   139                                  ;Prepare to return execution to the caller.
+   140 00000079 660F57C0                xorpd xmm0,xmm0                         ;Return 0.0 to the caller
+   141                                  
+   142                                  ;popf                                    ;Restore rflags
+   143                                  ;pop rbx                                 ;Restore rbx
+   144                                  ;pop r15                                 ;Restore r15
+   145                                  ;pop r14                                 ;Restore r14
+   146                                  ;pop r13                                 ;Restore r13
+   147                                  ;pop r12                                 ;Restore r12
+   148                                  ;pop r11                                 ;Restore r11
+   149                                  ;pop r10                                 ;Restore r10
+   150                                  ;pop r9                                  ;Restore r9
+   151                                  ;pop r8                                  ;Restore r8
+   152                                  ;pop rcx                                 ;Restore rcx
+   153                                  ;pop rdx                                 ;Restore rdx
+   154                                  ;pop rsi                                 ;Restore rsi
+   155                                  ;pop rdi                                 ;Restore rdi
+   156                                  ;pop rbp                                 ;Restore rbp
+   157                                  
+   158                                  gpr_restore    ;<==This macro restores all general purpose registers.
+   158          ******************       warning: label alone on a line without a colon might be in error [-w+label-orphan]
+   159                                  
+   160 0000007D C3                      ret                                     ;Pop the integer stack and jump to the address equal to the popped value.
+   161                                  
