@@ -75,22 +75,21 @@ promptA db "For array A enter a sequence of 64-bit floats seperated by white spa
 
 displayA db newline, "These numbers were received and placed into array A:",newline,null
 
-magnitudeA db "The magnitude of array A is %1.6lf",newline,null 
+magnitudeA db "The magnitude of array A is %1.10lf",newline,null 
 
 promptB db newline, "For array B enter a sequence of 64-bit floats seperated by white space.", newline,
         db "After the last input press enter followed by Control+D", newline, null
 
 displayB db newline, "These numbers were received and placed into array B:",newline,null
 
-magnitudeB db "The magnitude of array B is %1.6lf",newline,null
+magnitudeB db "The magnitude of array B is %1.10lf",newline,null
 
-displayAB db newline, "Arrays A and B have been appended and given the nameC", newline,
-          db "A0x2295B contains",newline,null
+displayAB db newline, "Arrays A and B have been appended and given the name A ", 0x2295, " B", newline,
+          db "A ",0x2295, " B contains",newline,null
 
-magnitudeAB db newline, "The magnitude of A0x2295B is %1.6lf",newline,null
+magnitudeAB db newline, "The magnitude of A ", 0x2295, " B is %1.10lf",newline,null
 
-meanAB db newline, "The mean of A0x2295B is %1.6lf",newline,newline,null
-
+meanAB db newline, "The mean of A ",0x2295," B is %1.10lf",newline,newline,null
 stringformat db "%s", 0                                     ;general string format
 
 floatformat db "%lf", 0
