@@ -47,7 +47,7 @@
 void display_array(double array[], size_t size){
     size_t i = 0;
     for(i = 0; i < size; i++){
-        printf("%1.5f\t", array[i]);
+        printf("%1.5f ", array[i]);
     }
     printf("\n");
     return;

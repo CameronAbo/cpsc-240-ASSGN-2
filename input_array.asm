@@ -70,40 +70,57 @@ mov r15, rsi                        ; r15 = capacity (number of cells)
 mov r13, 0                          ; r13 = 0
 
 begin:
-;--------------- Stores string input ------------------------------------------------------
+; Store string input
 xor rax, rax                        ; Clear rax
 mov rdi, buffer                     ; Address of string
 mov rsi, 511                        ; Maximum number of characters to read
 mov rdx, [stdin]                    ; File handle (FILE*) from libc stdin
 call fgets                           ; Call fgets to read a string from stdin stored at address in rdi
-;---------------------------------------------------------------------------------------------------
 
-;--------------- Check for ctrl-d ----------------------------------------------------------
+
+; Check for ctrl-d 
 cmp rax, 0                          ; Did fgets return 0 (ctrl-d)?
 je exit                             ; Jump if ctrl-d was entered
-;--------------- Validate string as float ----------------------------------------------------------
-;mov rax, 0                          ; Clear rax
-;mov rdi, buffer                     ; Address of string
-;call isfloat                        ; Call isfloat to validate the string as a float
-;; rax holds 0 if test fails, non-zero if test passes
-;cmp rax, 0                          ; Did the test fail?
-;je failed                           ; Jump if test failed
-;---------------------------------------------------------------------------------------------------
 
-;--------------- Convert String to float ----------------------------------------------------------
+; Trim \n for isFloat 
+mov rsi, buffer                     ; rsi = pointer to start of buffer
+trim_scan:
+    mov al, [rsi]                   ; Load byte from buffer
+    cmp al, 0                       ; Check for null terminator
+    je trim_done                    ; reached end, no newline found
+    cmp al, 10                      ; checks for \n
+    je trim_replace
+    inc rsi
+    jmp trim_scan
+trim_replace:
+    mov byte [rsi], 0               ; replace newline with null terminator
+    jmp trim_done
+trim_done:                          
+    mov al, [buffer]
+    cmp al, 0
+    je exit
+
+; Validate string as float 
+mov rax, 0                          ; Clear rax
+mov rdi, buffer                     ; Address of string
+call isfloat                        ; Call isfloat to validate the string as a float
+; rax holds 0 if test fails, non-zero if test passes
+cmp rax, 0                          ; Did the test fail?
+je failed                           ; Jump if test failed
+
+; Convert String to float 
 mov rax, 0
 mov rdi, buffer
 call atof                            ; Places converted float into rax
 jmp continue                         ; Jump to continue
-;---------------------------------------------------------------------------------------------------
 
-;--------------- If test Failed ----------------------------------------------------------------
+; If test Failed
 failed:
     mov rax, 0
     mov rdi, tryagainmessage
     call printf
     jmp begin
-;---------------------------------------------------------------------------------------------------
+;
 
 ; Store the float in the array and increment index
 continue:
