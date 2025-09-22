@@ -10,20 +10,23 @@ rm *.out
 echo "Bash: The script file for Array Management has begun"
 
 echo "Bash: Compile the main function" 
-gcc -c -m64 -Wall -fno-pie -no-pie -o director.o director.c -std=c17
+gcc -c -m64 -Wall -fno-pie -no-pie -o main.o main.c -std=c17
 #References regarding "-no-pie" see Jorgensen, page 226.
 
-echo "Bash: Assemble supervisor.asm"
-nasm -f elf64 -o super.o supervisor.asm
+echo "Bash: Compile the display_array function" 
+gcc -c -m64 -Wall -fno-pie -no-pie -o display.o display_array.c -std=c17
 
-echo "Bash: Compile input_array.c"
-gcc -c -m64 -Wall -fno-pie -no-pie -o input.o input_array.c -std=c17
+echo "Bash: Assemble manager.asm"
+nasm -f elf64 -o manage.o manager.asm
 
-echo "Bash: Assemble output_array.asm"
-nasm -f elf64 -o output.o output_array.asm
+echo "Bash: Assemble input_array.asm"
+nasm -f elf64 -o input.o input_array.asm
+
+echo "Bash: Assemble isfloat.asm"
+nasm -f elf64 -o isfloat.o isfloat.asm
 
 echo "Bash: Link the object files"
-gcc -m64 -no-pie -o arr.out -std=c17 director.o super.o input.o output.o #-fno-pie -no-pie
+gcc -m64 -no-pie -o arr.out -std=c17 main.o display.o manage.o input.o isfloat.o #-fno-pie -no-pie
 
 echo "Bash: Run the program Integer Arithmetic:"
 ./arr.out

@@ -54,40 +54,71 @@ newline equ 10
 null equ 0
 
 extern is_float
+extern stdin
+extern atof
+extern printf
+extern isfloat
+extern fgets
 
 global fill_array
 
 segment .data
-; empty
+tryagainmessage db "The last input was invalid and not entered into the array.",newline,null
 
 segment .bss
-; empty
+buffer resb 512                     ; holds the string input of a floating point number
 
 segment .text
 fill_array:
-	backup              ; This macro backs up all general purpose registers.
-	mov r14, rdi        ; r14 = base address of array (from caller)
-	mov r15, rsi        ; r15 = capacity (number of cells)
+backup              ; This macro backs up all general purpose registers.
+mov r14, rdi        ; r14 = base address of array (from caller)
+mov r15, rsi        ; r15 = capacity (number of cells)
+mov r13, 0          ; r13 = 0
 
-	xor r13, r13        ; r13 = index / count = 0
+begin:
+;--------------- Stores string input ------------------------------------------------------
+xor rax, rax                        ; Clear rax
+mov rdi, buffer                     ; Address of string
+mov rsi, 511                        ; Maximum number of characters to read
+mov rdx, [stdin]                    ; File handle (FILE*) from libc stdin
+call fgets                           ; Call fgets to read a string from stdin stored at address in rdi
+;---------------------------------------------------------------------------------------------------
 
-fill_loop:
-	cmp r13, r15        ; check of index < array size = 15
-	jge fill_done
+;--------------- Check for ctrl-d ----------------------------------------------------------
+cmp rax, 0                          ; Did fgets return 0 (ctrl-d)?
+je exit                             ; Jump if ctrl-d was entered
+;--------------- Validate string as float ----------------------------------------------------------
+;mov rax, 0                          ; Clear rax
+;mov rdi, buffer                     ; Address of string
+;call isfloat                        ; Call isfloat to validate the string as a float
+;; rax holds 0 if test fails, non-zero if test passes
+;cmp rax, 0                          ; Did the test fail?
+;je failed                           ; Jump if test failed
+;---------------------------------------------------------------------------------------------------
 
-	
-	mov rdi, 0          
-	call is_float       ; returns status in rax (0 = ctrl-d, 1 = valid) and double in xmm0
-	cmp rax, 0          ; 0 if ctrl-d is input
-	je fill_done        ; ctrl-d: stop filling array
+;--------------- Convert String to float ----------------------------------------------------------
+mov rax, 0
+mov rdi, buffer
+call atof                            ; Places converted float into rax
+jmp continue                         ; Jump to continue
+;---------------------------------------------------------------------------------------------------
 
-	; Store the returned double (xmm0) into array[r13]
-	movsd [r14 + r13*8], xmm0
+;--------------- If test Failed ----------------------------------------------------------------
+failed:
+    mov rax, 0
+    mov rdi, tryagainmessage
+    call printf
+    jmp begin
+;---------------------------------------------------------------------------------------------------
 
-	inc r13             ; increment count
-	jmp fill_loop
+continue:
+lea r8, [r14 + r13*8]  ; r8 = address of array[index = 0]
+movsd [r8], xmm0       ; store the float in the array
+inc r13                ; index++
+cmp r13, r15          ; compare index to array size
+jl begin
 
-fill_done:
-	mov rax, r13        ; return number of elements in array
-	restore             ; This macro restores all general purpose registers.
-	ret
+exit:
+mov rax, r13        ; return number of elements in array
+restore             ; This macro restores all general purpose registers.
+ret

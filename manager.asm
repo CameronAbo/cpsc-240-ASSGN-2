@@ -52,31 +52,84 @@
 %include "gpr_backup.inc"      ;<==This file contains macros that back up and restore the general purpose registers.
 newline equ 10
 null equ 0
-arraysize equ 15
-
+global array_size
+array_size equ 15
 
 extern printf
 extern isfloat
-extern fget
-extern atof
-extern input_array
-extern showlumber
-extern stdin
+extern fill_array
+extern display_array
 
 global manager
 
 segment .data
-tryagainmessage db "The last input was invalid and not entered into the array.",newline,null
+align 16
+welcome db "This program will manage your arrays of 64-bit floats",newline,null
+promptA db "For array A enter a sequence of 64-bit floats seperated by white space.", newline,
+        db "After the last input press enter followed by Control+D", newline, null
 
+displayA db newline, "These numbers were received and placed into array A:",newline,null
+
+magnitudeA db "The magnitude of array A is %1.6lf",newline,null 
+
+promptB db newline, "For array B enter a sequence of 64-bit floats seperated by white space.", newline,
+        db "After the last input press enter followed by Control+D", newline, null
+
+displayB db newline, "These numbers were received and placed into array B:",newline,null
+
+magnitudeB db "The magnitude of array B is %1.6lf",newline,null
+
+displayAB db newline, "Arrays A and B have been appended and given the name A0x2295B", newline,
+          db "A0x2295B contains",newline,null
+
+magnitudeAB db newline, "The magnitude of array A0x2295B is %1.6lf",newline,null
+
+meanAB db newline, "The mean of array A0x2295B is %1.6lf",newline,null
+
+stringformat db "%s", 0                                     ;general string format
+
+floatformat db "%lf", 0
+
+align 64
 
 segment .bss
-arrayA resq arraysize                      ;<==Holds up to 15 double precision floating point numbers (cell size: 8 bytes)
-arrayB resq arraysize                      ;<==Holds up to 15 double precision floating point numbers
+arrayA resq array_size                      ; Holds up to 15 double precision floating point numbers (cell size: 8 bytes)
+arrayB resq array_size                      ; Holds up to 15 double precision floating point numbers
+
+
 
 segment .text
-backup    ;<==This macro backs up all general purpose registers.
+manager:
+backup                  ; This macro backs up all general purpose registers.
+;---------------- Print welcome message ------------------------------------------------------
+mov qword rax, 0
+mov       rdi, stringformat
+mov       rsi, welcome
+call printf
+;---------------------------------------------------------------------------------------------------
+
+;---------------- Input array A ------------------------------------------------------
+mov qword rax, 0
+mov       rdi, stringformat
+mov       rsi, promptA
+call printf
+mov rax, 0
+mov rdi, arrayA
+mov rsi, array_size
+call fill_array        ; rax = elements in arrayA
+mov r13, rax           ; r13 holds the number of values stored in the array plywood.
+; Call display_array(arrayA, rax)
+mov qword rax, 0
+mov     rdi, stringformat
+mov     rsi, displayA
+call    printf
+
+mov     rdi, arrayA
+mov     rsi, r13        ; number of elements returned in r13
+call    display_array
 
 
 
-restore   ;<==This macro restores all general purpose registers.
+
+restore                 ; This macro restores all general purpose registers.
 ret
