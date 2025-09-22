@@ -59,6 +59,11 @@ extern printf
 extern isfloat
 extern fill_array
 extern display_array
+extern get_mean
+extern get_magnitude
+extern append
+extern clearerr
+extern stdin
 
 global manager
 
@@ -94,42 +99,112 @@ align 64
 
 segment .bss
 arrayA resq array_size                      ; Holds up to 15 double precision floating point numbers (cell size: 8 bytes)
-arrayB resq array_size                      ; Holds up to 15 double precision floating point numbers
 
+arrayB resq array_size                      ; Holds up to 15 double precision floating point numbers
 
 
 segment .text
 manager:
-backup                  ; This macro backs up all general purpose registers.
-;---------------- Print welcome message ------------------------------------------------------
-mov qword rax, 0
-mov       rdi, stringformat
-mov       rsi, welcome
-call printf
-;---------------------------------------------------------------------------------------------------
+backup                                      ; This macro backs up all general purpose registers.
+; Print welcome message
+mov qword   rax, 0
+mov         rdi, stringformat
+mov         rsi, welcome
+call        printf
 
-;---------------- Input array A ------------------------------------------------------
-mov qword rax, 0
-mov       rdi, stringformat
-mov       rsi, promptA
-call printf
-mov rax, 0
-mov rdi, arrayA
-mov rsi, array_size
-call fill_array        ; rax = elements in arrayA
-mov r13, rax           ; r13 holds the number of values stored in the array plywood.
+; Input array A
+mov qword   rax, 0
+mov         rdi, stringformat
+mov         rsi, promptA
+call        printf
+mov         rax, 0
+mov         rdi, arrayA
+mov         rsi, array_size
+call        fill_array                      ; rax = elements in arrayA
+mov         r13, rax                        ; r13 holds the number of values stored in the array plywood.
+
 ; Call display_array(arrayA, rax)
-mov qword rax, 0
-mov     rdi, stringformat
-mov     rsi, displayA
-call    printf
+mov qword   rax, 0
+mov         rdi, stringformat
+mov         rsi, displayA
+call        printf
+mov         rdi, arrayA                     ; rdi = pointer to arrayA
+mov         rsi, r13                        ; rsi = number of elements returned in arrayA
+call        display_array
 
-mov     rdi, arrayA
-mov     rsi, r13        ; number of elements returned in r13
-call    display_array
+; Call get_magnitude(arrayA, r13)
+mov         rdi, arrayA                     ; rdi = pointer to arrayA
+mov         rsi, r13
+call        get_magnitude                   ; rsi = number of elements returned in arrayA
+movsd       xmm8, xmm0                      ; Store magnitude of array A in xmm8
+
+; Display Magnitude of array A
+mov         rax, 1
+movsd       xmm0, xmm8                      ; Move magnitude of array A into xmm0 for printf
+mov         rdi, magnitudeA
+call        printf
+
+    ; Clear EOF on stdin so subsequent fgets calls (for array B) will work after Ctrl-D
+    mov     rdi, [rel stdin]
+    call    clearerr
+
+; Input array B
+mov qword   rax, 0
+mov         rdi, stringformat
+mov         rsi, promptB
+call        printf
+mov         rax, 0
+mov         rdi, arrayB
+mov         rsi, array_size
+call        fill_array                      ; rax = elements in arrayB
+mov         r14, rax                        ; r14 holds the number of values stored in the arrayB.
+
+; Call display_array(arrayB, rax)
+mov qword   rax, 0
+mov         rdi, stringformat
+mov         rsi, displayB
+call        printf
+mov         rdi, arrayB                     ; rdi = pointer to arrayB
+mov         rsi, r14                        ; rsi = number of elements returned in arrayB
+call        display_array
+
+; Call get_magnitude(arrayB, r14)
+mov         rdi, arrayB                     ; rdi = pointer to arrayB
+mov         rsi, r14
+call        get_magnitude                   ; rsi = number of elements returned in arrayB
+movsd       xmm9, xmm0                      ; Store magnitude of array B in xmm9
+
+; Display Magnitude of array B
+mov         rax, 1
+movsd       xmm0, xmm9                      ; Move magnitude of array B into xmm0 for
+mov         rdi, magnitudeB
+call        printf
+
+; Append array B to array A to create array A0x2295B
+; r13 = number of elements in array A
+; r14 = number of elements in array B
+; rdi = pointer to array A
+; rsi = pointer to array B
+; rdx = number of elements in array A0x2295B
+mov         rdi, arrayA                     ; rdi = pointer to arrayA
+mov         rsi, r13                        ; rsi = number of elements arrayA
+mov         rdx, arrayB                     ; rdx = pointer to arrayB
+mov         rcx, r14                        ; rcx = length of arrayB
+call        append                          ; rax = pointer to new array A0x2295B
+mov         r12, rax                        ; r12 = pointer to new array A0x2295B
+mov         r15, r13                        ; r15 = number of elements in array A0x2295B
+add         r15, r14                        ; r15 = number of elements in array A0x2295B
+
+; Display array A0x2295B
+mov qword   rax, 0
+mov         rdi, stringformat
+mov         rsi, displayAB
+call        printf
+mov         rdi, r12                        ; rdi = pointer to array A0x2295B
+mov         rsi, r15                        ; rsi = number of elements returned in array A0x2295B
+call        display_array   
 
 
 
-
-restore                 ; This macro restores all general purpose registers.
+restore                                     ; This macro restores all general purpose registers.
 ret
