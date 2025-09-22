@@ -54,12 +54,12 @@ extern double manager();
 
 int main(int argc, char* argv[]){
     double return_code = -1.0;
-    printf("Welcome to Arrays of Floats!\n");
-    printf("Brought to you by Cameron Abo\n");
+    printf("\nWelcome to Arrays of Floats!\n");
+    printf("Brought to you by Cameron Abo\n\n");
 
     return_code = manager();
 
     printf("Main received %lf, and will keep it for future use.\n",return_code);
-    printf("Main will return 0 to the operating System. Bye\n");
+    printf("Main will return 0 to the operating System. Bye\n\n");
     return 0;
 }//End of main

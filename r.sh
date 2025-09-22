@@ -37,7 +37,7 @@ nasm -f elf64 -o append.o append.asm
 echo "Bash: Link the object files"
 gcc -m64 -no-pie -o arr.out -std=c17 main.o display.o manage.o input.o isfloat.o mean.o magnitude.o append.o #-fno-pie -no-pie
 
-echo "Bash: Run the program Integer Arithmetic:"
+echo "Bash: Run the program Assignment 2 Array Management:"
 ./arr.out
 
 echo "The script file will terminate"
