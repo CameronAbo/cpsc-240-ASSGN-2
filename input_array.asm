@@ -16,35 +16,29 @@
 ;  Author email: cabo0@csu.fullerton.edu
 ;
 ;Program information
-;  Program name: gpr_backup.inc
+;  Program name: Assignment 2 Array magnitudement
 ;  Programming environment: Visual Studio Code, gcc 9.4.0, nasm
-;  Programming languages:  X86
+;  Programming languages:  2 module in C and 5 modules in X86
 ;  Date program began:     2025-Sep-21
 ;  Date program completed: 2025-Sep-21
 ;  Date comments upgraded: 2025-Sep-21
-;  Files in this program: director.c, supervisor.asm, output_array.asm, input_array.c, director.c 
-;  Status: Complete.  Alpha testing is finished.  Extreme cases were tested and errors resolved.
+;  Files in this program: main.c, display_array.c, manager.asm, input_array.asm, mean.asm, magnitude.asm, append.asm
+;  Status: Complete.
 ;
 ;References for this program
 ;  X86-64 Assembly Language Programming with Ubuntu
 ;
 ;Purpose (academic)
-;  Backup and restore all general purpose registers and rflags.
+;  Store and manipulate the elements of two arrays of double-precision floating point numbers.
 ;
 ;This file
-;   File name: gpr_backup.inc
+;   File name: input_array.asm
 ;   Language: i-series microprocessor assembly
 ;   Syntax: Intel
 ;   Max page width: 116 columns
-;   Assemble: nasm -f elf64 -o super.o supervisor.asm -l super.lis
-;   Link: gcc -m64 -no-pie -o arr.out -std=c17 director.o super.o input.o output.o 
+;   Assemble: nasm -f elf64 -o input.o input_array.asm -l input.lis
+;   Link: gcc -m64 -no-pie -o arr.out -std=c17 main.o display.o manage.o input.o isfloat.o mean.o magnitude.o append.o #-fno-pie -no-pie 
 ;   Reference regarding -no-pie: Jorgensen, page 226.
-;   Prototype of this function:  double manage_arrays();
-;
-;=======1=========2=========3=========4=========5=========6=========7=========8=========9=========0=========1=========2
-;
-;
-;
 ;
 ;===== Begin code area ================================================================================================
 
@@ -70,10 +64,10 @@ buffer resb 512                     ; holds the string input of a floating point
 
 segment .text
 fill_array:
-backup              ; This macro backs up all general purpose registers.
-mov r14, rdi        ; r14 = base address of array (from caller)
-mov r15, rsi        ; r15 = capacity (number of cells)
-mov r13, 0          ; r13 = 0
+backup                              ; This macro backs up all general purpose registers.
+mov r14, rdi                        ; r14 = base address of array (from caller)
+mov r15, rsi                        ; r15 = capacity (number of cells)
+mov r13, 0                          ; r13 = 0
 
 begin:
 ;--------------- Stores string input ------------------------------------------------------
@@ -111,14 +105,17 @@ failed:
     jmp begin
 ;---------------------------------------------------------------------------------------------------
 
+; Store the float in the array and increment index
 continue:
-lea r8, [r14 + r13*8]  ; r8 = address of array[index = 0]
-movsd [r8], xmm0       ; store the float in the array
-inc r13                ; index++
-cmp r13, r15          ; compare index to array size
+lea r8, [r14 + r13*8]               ; r8 = address of array[index = 0]
+movsd [r8], xmm0                    ; store the float in the array
+inc r13                             ; index++
+cmp r13, r15                        ; compare index to array size
 jl begin
 
+; Return number of elements in array
 exit:
-mov rax, r13        ; return number of elements in array
-restore             ; This macro restores all general purpose registers.
+mov rax, r13                        ; return number of elements in array
+restore                             ; This macro restores all general purpose registers.
 ret
+; End of file

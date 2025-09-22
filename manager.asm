@@ -16,35 +16,29 @@
 ;  Author email: cabo0@csu.fullerton.edu
 ;
 ;Program information
-;  Program name: gpr_backup.inc
+;  Program name: Assignment 2 Array Management
 ;  Programming environment: Visual Studio Code, gcc 9.4.0, nasm
-;  Programming languages:  X86
+;  Programming languages:  2 module in C and 5 modules in X86
 ;  Date program began:     2025-Sep-21
 ;  Date program completed: 2025-Sep-21
 ;  Date comments upgraded: 2025-Sep-21
-;  Files in this program: director.c, supervisor.asm, output_array.asm, input_array.c, director.c 
-;  Status: Complete.  Alpha testing is finished.  Extreme cases were tested and errors resolved.
+;  Files in this program: main.c, display_array.c, manager.asm, input_array.asm, mean.asm, magnitude.asm, append.asm
+;  Status: Complete.
 ;
 ;References for this program
 ;  X86-64 Assembly Language Programming with Ubuntu
 ;
 ;Purpose (academic)
-;  Backup and restore all general purpose registers and rflags.
+;  Store and manipulate the elements of two arrays of double-precision floating point numbers.
 ;
 ;This file
-;   File name: gpr_backup.inc
+;   File name: manager.asm
 ;   Language: i-series microprocessor assembly
 ;   Syntax: Intel
 ;   Max page width: 116 columns
-;   Assemble: nasm -f elf64 -o super.o supervisor.asm -l super.lis
+;   Assemble: nasm -f elf64 -o manage.o manager.asm -l manage.lis
 ;   Link: gcc -m64 -no-pie -o arr.out -std=c17 director.o super.o input.o output.o 
 ;   Reference regarding -no-pie: Jorgensen, page 226.
-;   Prototype of this function:  double manage_arrays();
-;
-;=======1=========2=========3=========4=========5=========6=========7=========8=========9=========0=========1=========2
-;
-;
-;
 ;
 ;===== Begin code area ================================================================================================
 
@@ -69,30 +63,32 @@ global manager
 
 segment .data
 align 16
-welcome db "This program will manage your arrays of 64-bit floats",newline,null
-promptA db "For array A enter a sequence of 64-bit floats seperated by white space.", newline,
-        db "After the last input press enter followed by Control+D", newline, null
+welcome     db "This program will manage your arrays of 64-bit floats",newline,null
 
-displayA db newline, "These numbers were received and placed into array A:",newline,null
+promptA     db "For array A enter a sequence of 64-bit floats seperated by white space.", newline,
+            db "After the last input press enter followed by Control+D", newline, null
 
-magnitudeA db "The magnitude of array A is %1.10lf",newline,null 
+displayA    db newline, "These numbers were received and placed into array A:",newline,null
 
-promptB db newline, "For array B enter a sequence of 64-bit floats seperated by white space.", newline,
-        db "After the last input press enter followed by Control+D", newline, null
+magnitudeA  db "The magnitude of array A is %1.10lf",newline,null 
 
-displayB db newline, "These numbers were received and placed into array B:",newline,null
+promptB     db newline, "For array B enter a sequence of 64-bit floats seperated by white space.", newline,
+            db "After the last input press enter followed by Control+D", newline, null
 
-magnitudeB db "The magnitude of array B is %1.10lf",newline,null
+displayB    db newline, "These numbers were received and placed into array B:",newline,null
 
-displayAB db newline, "Arrays A and B have been appended and given the name A ", 0x2295, " B", newline,
-          db "A ",0x2295, " B contains",newline,null
+magnitudeB  db "The magnitude of array B is %1.10lf",newline,null
+
+displayAB   db newline, "Arrays A and B have been appended and given the name A ", 0x2295, " B", newline,
+            db "A ",0x2295, " B contains",newline,null
 
 magnitudeAB db newline, "The magnitude of A ", 0x2295, " B is %1.10lf",newline,null
 
-meanAB db newline, "The mean of A ",0x2295," B is %1.10lf",newline,newline,null
+meanAB      db newline, "The mean of A ",0x2295," B is %1.10lf",newline,newline,null
+
 stringformat db "%s", 0                                     ;general string format
 
-floatformat db "%lf", 0
+floatformat db "%lf", 0                                     ;general float format
 
 align 64
 
@@ -143,9 +139,9 @@ movsd       xmm0, xmm8                      ; Move magnitude of array A into xmm
 mov         rdi, magnitudeA
 call        printf
 
-    ; Clear EOF on stdin so subsequent fgets calls (for array B) will work after Ctrl-D
-    mov     rdi, [rel stdin]
-    call    clearerr
+; Clear EOF on stdin so subsequent fgets calls (for array B) will work after Ctrl-D
+mov     rdi, [rel stdin]
+call    clearerr
 
 ; Input array B
 mov qword   rax, 0
@@ -175,16 +171,11 @@ movsd       xmm9, xmm0                      ; Store magnitude of array B in xmm9
 
 ; Display Magnitude of array B
 mov         rax, 1
-movsd       xmm0, xmm9                      ; Move magnitude of array B into xmm0 for
+movsd       xmm0, xmm9                      ; Move magnitude of array B into xmm0 for printf
 mov         rdi, magnitudeB
 call        printf
 
 ; Append array B to array A to create arrayC
-; r13 = number of elements in array A
-; r14 = number of elements in array B
-; rdi = pointer to array A
-; rsi = pointer to array B
-; rdx = number of elements in arrayC
 mov         rdi, arrayA                     ; rdi = pointer to arrayA
 mov         rsi, r13                        ; rsi = number of elements arrayA
 mov         rdx, arrayB                     ; rdx = pointer to arrayB
@@ -229,3 +220,4 @@ call        printf
 
 restore                                     ; This macro restores all general purpose registers.
 ret
+; End of file
