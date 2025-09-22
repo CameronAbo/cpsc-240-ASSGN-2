@@ -84,12 +84,12 @@ displayB db newline, "These numbers were received and placed into array B:",newl
 
 magnitudeB db "The magnitude of array B is %1.6lf",newline,null
 
-displayAB db newline, "Arrays A and B have been appended and given the name A0x2295B", newline,
+displayAB db newline, "Arrays A and B have been appended and given the nameC", newline,
           db "A0x2295B contains",newline,null
 
-magnitudeAB db newline, "The magnitude of array A0x2295B is %1.6lf",newline,null
+magnitudeAB db newline, "The magnitude of A0x2295B is %1.6lf",newline,null
 
-meanAB db newline, "The mean of array A0x2295B is %1.6lf",newline,null
+meanAB db newline, "The mean of A0x2295B is %1.6lf",newline,newline,null
 
 stringformat db "%s", 0                                     ;general string format
 
@@ -180,31 +180,53 @@ movsd       xmm0, xmm9                      ; Move magnitude of array B into xmm
 mov         rdi, magnitudeB
 call        printf
 
-; Append array B to array A to create array A0x2295B
+; Append array B to array A to create arrayC
 ; r13 = number of elements in array A
 ; r14 = number of elements in array B
 ; rdi = pointer to array A
 ; rsi = pointer to array B
-; rdx = number of elements in array A0x2295B
+; rdx = number of elements in arrayC
 mov         rdi, arrayA                     ; rdi = pointer to arrayA
 mov         rsi, r13                        ; rsi = number of elements arrayA
 mov         rdx, arrayB                     ; rdx = pointer to arrayB
 mov         rcx, r14                        ; rcx = length of arrayB
-call        append                          ; rax = pointer to new array A0x2295B
-mov         r12, rax                        ; r12 = pointer to new array A0x2295B
-mov         r15, r13                        ; r15 = number of elements in array A0x2295B
-add         r15, r14                        ; r15 = number of elements in array A0x2295B
+call        append                          ; rax = pointer to new arrayC
+mov         r12, rax                        ; r12 = pointer to new arrayC
+mov         r15, r13                        ; r15 = number of elements in arrayC
+add         r15, r14                        ; r15 = number of elements in arrayC
 
-; Display array A0x2295B
+; Display arrayC
 mov qword   rax, 0
 mov         rdi, stringformat
 mov         rsi, displayAB
 call        printf
-mov         rdi, r12                        ; rdi = pointer to array A0x2295B
-mov         rsi, r15                        ; rsi = number of elements returned in array A0x2295B
+mov         rdi, r12                        ; rdi = pointer to arrayC
+mov         rsi, r15                        ; rsi = number of elements returned in arrayC
 call        display_array   
 
+; Call get_magnitude(arrayC, r15)
+mov         rdi, r12                        ; rdi = pointer to arrayC
+mov         rsi, r15
+call        get_magnitude                   ; rsi = number of elements returned in arrayC
+movsd       xmm10, xmm0                     ; Store magnitude of array C in xmm10
 
+; Display Magnitude of array C
+mov         rax, 1
+movsd       xmm0, xmm10                     ; Move magnitude of array C into xmm0 for
+mov         rdi, magnitudeAB
+call        printf
+
+; Call get_mean(arrayC, r15)
+mov         rdi, r12                        ; rdi = pointer to arrayC
+mov         rsi, r15
+call        get_mean                        ; rsi = number of elements returned in arrayC
+movsd       xmm10, xmm0                     ; Store mean of array C in xmm10
+
+; Display Mean of array C
+mov         rax, 1
+movsd       xmm0, xmm10                     ; Move mean of array C into xmm0 for
+mov         rdi, meanAB
+call        printf
 
 restore                                     ; This macro restores all general purpose registers.
 ret
